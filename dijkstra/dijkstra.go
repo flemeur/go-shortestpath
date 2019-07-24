@@ -9,21 +9,21 @@ import (
 	"errors"
 )
 
-// Node is an interface for your own implementation of a vertex in a graph
+// Node is an interface for your own implementation of a vertex in a graph.
 type Node interface {
 	Edges() []Edge
 }
 
-// Edge is an interface for your own implementation of an edge between two vertices in a graph
+// Edge is an interface for your own implementation of an edge between two vertices in a graph.
 type Edge interface {
 	Destination() Node
 	Weight() float64
 }
 
 // ShortestPath finds a shortest path between the start and end nodes.
-// The two nodes' underlying values must be pointers
+// The two nodes' underlying values must be pointers.
 func ShortestPath(start, end Node) ([]Node, error) {
-	visited := make(map[Node]bool)
+	visited := make(map[Node]struct{})
 	dists := make(map[Node]float64)
 	prev := make(map[Node]Node)
 
@@ -32,8 +32,8 @@ func ShortestPath(start, end Node) ([]Node, error) {
 	heap.Init(queue)
 
 	for queue.Len() > 0 {
-		// Done
-		if visited[end] {
+		// Done.
+		if _, ok := visited[end]; ok {
 			break
 		}
 
@@ -48,10 +48,10 @@ func ShortestPath(start, end Node) ([]Node, error) {
 				heap.Push(queue, &queueItem{value: dest, weight: dist})
 			}
 		}
-		visited[n] = true
+		visited[n] = struct{}{}
 	}
 
-	if !visited[end] {
+	if _, ok := visited[end]; !ok {
 		return nil, errors.New("no shortest path exists")
 	}
 
@@ -60,7 +60,7 @@ func ShortestPath(start, end Node) ([]Node, error) {
 		path = append(path, next)
 	}
 
-	// Reverse path
+	// Reverse path.
 	for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {
 		path[i], path[j] = path[j], path[i]
 	}
@@ -103,9 +103,4 @@ func (q *queue) Pop() interface{} {
 	item.index = -1 // for safety
 	*q = old[0 : n-1]
 	return item
-}
-
-func (q *queue) update(item *queueItem, weight float64) {
-	item.weight = weight
-	heap.Fix(q, item.index)
 }
